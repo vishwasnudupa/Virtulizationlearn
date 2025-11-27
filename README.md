@@ -38,6 +38,14 @@ Each module contains a `test_module.ps1` file.
     3.  Run `.\test_module.ps1`.
 -   **What it does**: It automatically checks if your containers/pods are running correctly and if the API is responding.
 
+> [!WARNING]
+> **"Running scripts is disabled on this system" Error?**
+> If you get a security error, run this command to allow scripts for the current session only:
+> ```powershell
+> Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+> ```
+> Then try running `.\test_module.ps1` again.
+
 ## 🏗️ System Architecture (Final State)
 
 ```mermaid

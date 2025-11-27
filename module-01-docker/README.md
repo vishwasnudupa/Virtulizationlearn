@@ -141,10 +141,10 @@ Instead of running `docker run` commands manually, we define our infrastructure 
 ## ⚡ Module Cheatsheet
 | Command | Description |
 | :--- | :--- |
-| `docker-compose up --build` | Build images and start all services in the background (or foreground without `-d`). |
-| `docker-compose down` | Stop and remove containers, networks, and volumes defined in `docker-compose.yaml`. |
-| `docker-compose ps` | List the status of services managed by Compose. |
-| `docker-compose exec <service> <cmd>` | Execute a command inside a running service container (e.g., `redis-cli`). |
+| `docker compose up --build` | Build images and start all services in the background (or foreground without `-d`). |
+| `docker compose down` | Stop and remove containers, networks, and volumes defined in `docker-compose.yaml`. |
+| `docker compose ps` | List the status of services managed by Compose. |
+| `docker compose exec <service> <cmd>` | Execute a command inside a running service container (e.g., `redis-cli`). |
 | `docker build -t <name> .` | Build a Docker image from a Dockerfile in the current directory. |
 
 ---

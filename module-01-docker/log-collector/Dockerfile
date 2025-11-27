@@ -16,7 +16,7 @@ ENV PYTHONUNBUFFERED 1
 
 # Install Python dependencies
 COPY requirements.txt .
-RUN pip install --user --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # ==========================================
 # Stage 2: Runtime
@@ -27,10 +27,10 @@ FROM python:3.11-slim as runtime
 WORKDIR /app
 
 # Copy only the installed packages from the builder stage
-COPY --from=builder /root/.local /root/.local
+COPY --from=builder /usr/local /usr/local
 
-# Update PATH to include the user installed packages
-ENV PATH=/root/.local/bin:$PATH
+# Update PATH to include the globally installed packages
+ENV PATH=/usr/local/bin:$PATH
 
 # Copy application code
 COPY main.py .
