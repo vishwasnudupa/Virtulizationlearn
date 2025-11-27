@@ -25,6 +25,43 @@ Instead of managing 10 YAML files, we manage one `values.yaml`.
 - **Templates**: Files with `{{ .Values.key }}` placeholders.
 - **Release**: An instance of a chart running in a cluster.
 
+### 3. Deep Dive: The Art of Helm Templating 🎨
+Helm uses the **Go Templating Language**. It's powerful but has a learning curve. To master it, you need to understand:
+
+#### A. The Objects
+*   **`.Values`**: Accesses variables from `values.yaml`. (e.g., `.Values.image.tag`).
+*   **`.Release`**: Info about the deployment (e.g., `.Release.Name`, `.Release.Namespace`).
+*   **`.Chart`**: Info from `Chart.yaml` (e.g., `.Chart.Version`).
+
+#### B. The Actions (`{{ }}`)
+*   **Substitution**: `image: {{ .Values.image }}` -> Replaces with the value.
+*   **Pipelines (`|`)**: `{{ .Values.foo | quote }}` -> Wraps the value in quotes.
+    *   `default "latest"`: Use "latest" if the value is missing.
+    *   `upper`: Convert to UPPERCASE.
+
+#### C. Logic & Flow Control
+*   **Conditionals (`if/else`)**:
+    ```yaml
+    {{- if .Values.ingress.enabled }}
+    kind: Ingress
+    {{- end }}
+    ```
+    *Note the `-` inside `{{-`. It trims whitespace/newlines, which is crucial in YAML.*
+*   **Loops (`range`)**:
+    ```yaml
+    env:
+    {{- range $key, $val := .Values.envVars }}
+      - name: {{ $key }}
+        value: {{ $val | quote }}
+    {{- end }}
+    ```
+
+#### D. What to Learn?
+To build complex charts, study:
+1.  **Go Template Syntax**: The underlying logic engine.
+2.  **YAML Indentation**: Helm's `indent` and `nindent` functions are vital because YAML is whitespace-sensitive.
+3.  **Helper Templates (`_helpers.tpl`)**: Defining reusable snippets (like a standard label block) to avoid copy-pasting code across 10 files.
+
 ### 2. Network Policies (`security/network-policy.yaml`)
 By default, all pods can talk to all pods. This is insecure.
 - **Our Policy**: Only `collector`, `analyzer`, and `dashboard` can talk to `redis`. If a hacker compromises a different pod, they cannot access our database.

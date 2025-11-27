@@ -43,6 +43,19 @@ Similar to ConfigMaps, but for sensitive data (passwords, API keys). K8s stores 
     - **Stable Identity**: Pods are named `redis-0`, `redis-1` (not random hashes).
     - **PersistentVolumeClaim (PVC)**: Automatically requests storage. Even if the pod moves to another node, the storage follows it.
 
+### 4. Deep Dive: The `kubectl` CLI 🕹️
+`kubectl` is your cockpit. It's just a REST Client that talks to the Kubernetes API Server.
+*   **The Config**: It looks for a file at `~/.kube/config` (or `%USERPROFILE%\.kube\config`) to know which cluster to talk to.
+*   **The Verbs**:
+    *   **`get`**: "Show me the list" (SQL: SELECT *).
+    *   **`describe`**: "Show me the details and events" (Crucial for debugging).
+    *   **`logs`**: "Print stdout/stderr".
+    *   **`exec`**: "SSH into the container".
+    *   **`apply`**: "Make the cluster look like this file" (Upsert).
+*   **Output Formats**:
+    *   `kubectl get pod -o wide`: Show IPs and Nodes.
+    *   `kubectl get pod -o yaml`: Show the full raw configuration (useful to see what K8s added).
+
 ## 🛠️ Hands-On Guide
 
 ### 1. Build the Analyzer Image

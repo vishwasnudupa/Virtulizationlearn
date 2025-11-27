@@ -10,17 +10,19 @@ In this module, we will expose our application to the outside world and make it 
 
 ```mermaid
 graph LR
-    User[User Browser] -- http://sentinel.local --> Ingress[Ingress Controller]
-    Ingress -- / --> Dashboard[Dashboard Service]
-    Ingress -- /api/logs --> Collector[Collector Service]
+    User[User Browser] -- "http://sentinel.local" --> Ingress[Ingress Controller]
+    Ingress -- "/" --> Dashboard[Dashboard Service]
+    Ingress -- "/api/logs" --> Collector[Collector Service]
     
-    subgraph Autoscaling Group
-        Analyzer1[Analyzer Pod]
-        Analyzer2[Analyzer Pod]
-        Analyzer3[Analyzer Pod]
+    subgraph ASG [Autoscaling Group]
+        Analyzer1[Analyzer Pod 1]
+        Analyzer2[Analyzer Pod 2]
+        Analyzer3[Analyzer Pod 3]
     end
     
-    HPA[HPA Controller] -- Watches CPU --> Autoscaling Group
+    HPA[HPA Controller] -- "Watches CPU" --> Analyzer1
+    HPA -.-> Analyzer2
+    HPA -.-> Analyzer3
 ```
 
 ## 🔑 Key Concepts

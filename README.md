@@ -29,6 +29,15 @@ The project is divided into 5 modules, each building upon the previous one.
 - **Helm** CLI tool
 - **Python 3.11+** (Optional, for running scripts locally)
 
+## 🧪 Testing
+Each module contains a `test_module.ps1` file.
+-   **What is a `.ps1` file?**: It stands for **PowerShell Script**. It's a powerful scripting language (like Bash but for Windows) used for automation.
+-   **How to run it**:
+    1.  Open PowerShell.
+    2.  Navigate to the module directory.
+    3.  Run `.\test_module.ps1`.
+-   **What it does**: It automatically checks if your containers/pods are running correctly and if the API is responding.
+
 ## 🏗️ System Architecture (Final State)
 
 ```mermaid

@@ -18,6 +18,73 @@ graph LR
 - **Log Collector**: A REST API that accepts log entries.
 - **Redis**: An in-memory data store acting as a temporary message queue.
 
+## 🧠 Tech Stack Deep Dive
+
+### ⚡ FastAPI
+FastAPI is a modern, high-performance web framework for building APIs with Python.
+- **Why we use it**: It's one of the fastest Python frameworks available (on par with NodeJS and Go). It automatically generates interactive API documentation (Swagger UI) based on your code.
+
+### 🦄 Uvicorn
+FastAPI is just the framework (the logic). It needs a **Server** to listen for network requests.
+- **What is it**: Uvicorn is an ASGI (Asynchronous Server Gateway Interface) web server.
+- **Key Features**:
+    - **Speed**: Built on `uvloop`, making it lightning fast.
+    - **Async**: Natively supports Python's `async/await` for handling thousands of concurrent connections.
+
+### 🔴 Redis
+Redis (Remote Dictionary Server) is an in-memory data structure store.
+- **Role**: In our app, it acts as a **Message Queue**. The collector pushes logs, and the analyzer pops them.
+- **Basics**:
+    - **In-Memory**: Data is stored in RAM, making it sub-millisecond fast.
+    - **Key-Value**: You store data like a Python dictionary (`SET key value`, `GET key`).
+    - **Lists**: We use Redis Lists (`LPUSH`, `BRPOP`) to create a First-In-First-Out (FIFO) queue.
+- **Key Features**:
+    - **Persistence**: Can save RAM data to disk (RDB/AOF) so you don't lose it on restart.
+    - **Pub/Sub**: Real-time messaging pattern.
+
+### 🔄 Industry Alternatives
+What else do companies use?
+
+*   **Alternatives to FastAPI**:
+    *   **Flask**: Older, simpler, but slower. Good for small apps.
+    *   **Django**: "Batteries included". Heavy, good for standard websites.
+    *   **Spring Boot (Java)**: The enterprise standard. Very robust, very verbose.
+    *   **Express.js (Node)**: The standard for JavaScript backends.
+
+*   **Alternatives to Redis (as a Queue)**:
+    *   **RabbitMQ**: A dedicated message broker. More reliable delivery guarantees than Redis.
+    *   **Apache Kafka**: For massive scale streaming (millions of events/sec). Hard to manage.
+    *   **AWS SQS / Google PubSub**: Managed cloud queues. Zero maintenance.
+
+*   **Alternatives to Docker**:
+    *   **Podman**: A daemon-less alternative. More secure by default (rootless).
+    *   **Containerd**: The runtime that actually runs containers (Docker uses this internally).
+
+### 🆚 Docker vs Docker Compose
+**Docker** is the engine. **Compose** is the conductor.
+
+#### 1. Docker CLI (`docker run`)
+You start containers one by one manually. They don't know about each other by default.
+```mermaid
+graph LR
+    User -->|docker run| A[Container A]
+    User -->|docker run| B[Container B]
+    style A fill:#ff9999,stroke:#333
+    style B fill:#ff9999,stroke:#333
+```
+
+#### 2. Docker Compose (`docker-compose up`)
+You define the entire system in a file. Compose starts everything and connects them via a network.
+```mermaid
+graph LR
+    User -->|docker-compose up| YAML[docker-compose.yaml]
+    YAML -->|Creates| Net[Network: sentinel-net]
+    Net -->|Connects| A[Container A]
+    Net -->|Connects| B[Container B]
+    A <-->|Talks to| B
+    style Net fill:#99ccff,stroke:#333
+```
+
 ## 🛠️ Hands-On Guide
 
 ### 1. The Application Code (`log-collector/`)
@@ -33,7 +100,9 @@ Open the `Dockerfile`. We use a **Multi-Stage Build**.
 ### 3. Orchestration with Docker Compose (`docker-compose.yaml`)
 Instead of running `docker run` commands manually, we define our infrastructure as code.
 - **Services**: We define `log-collector` and `redis-queue`.
-- **Networking**: We create a bridge network `sentinel-net`. Docker's internal DNS allows `log-collector` to reach Redis simply by using the hostname `redis-queue`.
+- **Networking (`sentinel-net`)**:
+    - **What is it?**: We defined a custom bridge network called `sentinel-net`. Think of it as a private Wi-Fi for your containers.
+    - **Why?**: It enables **Service Discovery**. The `log-collector` can simply say "Connect to `redis-queue`", and Docker magically routes the traffic to the right container IP.
 
 ## 🚀 Running the Project
 

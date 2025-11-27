@@ -12,19 +12,27 @@ We are now running inside a Kubernetes Cluster (like Minikube or Kind).
 
 ```mermaid
 graph LR
-    subgraph Kubernetes Cluster
-        subgraph Service: collector-service
-            Pod1[Collector Pod]
-            Pod2[Collector Pod]
+    subgraph Cluster [Kubernetes Cluster]
+        Generator[Log Generator Pod]
+        
+        subgraph CollectorApp [Collector App]
+            Svc1(Service: collector-service)
+            Pod1[Collector Pod 1]
+            Pod2[Collector Pod 2]
         end
         
-        subgraph Service: redis-service
+        subgraph RedisApp [Redis App]
+            Svc2(Service: redis-service)
             Redis[Redis Pod]
         end
         
-        Generator[Log Generator Pod] -- DNS: collector-service --> Service: collector-service
-        Pod1 -- DNS: redis-service --> Service: redis-service
-        Pod2 -- DNS: redis-service --> Service: redis-service
+        Generator -- "DNS: collector-service" --> Svc1
+        Svc1 -.-> Pod1
+        Svc1 -.-> Pod2
+        
+        Pod1 -- "DNS: redis-service" --> Svc2
+        Pod2 --> Svc2
+        Svc2 -.-> Redis
     end
 ```
 
@@ -37,6 +45,17 @@ In Docker, you run a container. In K8s, you run a **Pod**. A Pod is a wrapper ar
 We don't create Pods directly. We use a **Deployment**.
 - **Replicas**: We set `replicas: 2`. K8s ensures 2 copies are always running. If one crashes, K8s restarts it.
 - **Selector**: How the Deployment finds its Pods (using labels).
+
+### 3. YAML Anatomy: Reading the Matrix 🧬
+Kubernetes manifests might look scary, but they all follow the same logic.
+*   **`apiVersion`**: *Which department do I talk to?* (e.g., `apps/v1` for Deployments, `v1` for Pods).
+*   **`kind`**: *What form am I filling out?* (Pod, Service, Deployment).
+*   **`metadata`**: *Who am I?* (Name, Labels, Namespace).
+    *   **Labels**: Sticky notes you put on objects so you can find them later (e.g., `app: sentinel`).
+*   **`spec`**: *What do I want?* (The Desired State).
+    *   This is the most important part. It changes based on the `kind`.
+    *   For a Pod, it asks for `containers`.
+    *   For a Service, it asks for `ports`.
 
 ### 3. Services (`collector-service.yaml`)
 Pods have dynamic IPs. If a Pod restarts, it gets a new IP. A **Service** gives us a stable IP and DNS name.
