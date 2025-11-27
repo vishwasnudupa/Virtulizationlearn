@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: redis-access-policy
+spec:
+  podSelector:
+    matchLabels:
+      component: queue
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          component: collector
+    - podSelector:
+        matchLabels:
+          component: analyzer
+    - podSelector:
+        matchLabels:
+          component: dashboard
+    ports:
+    - protocol: TCP
+      port: 6379

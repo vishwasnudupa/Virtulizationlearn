@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-collector
+  labels:
+    app: {{ .Release.Name }}
+    component: collector
+spec:
+  replicas: {{ .Values.collector.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+      component: collector
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+        component: collector
+    spec:
+      containers:
+        - name: collector
+          image: "{{ .Values.collector.image.repository }}:{{ .Values.collector.image.tag }}"
+          ports:
+            - containerPort: 8000
+          env:
+            - name: REDIS_HOST
+              value: "{{ .Release.Name }}-redis"
+            - name: REDIS_PORT
+              value: "6379"

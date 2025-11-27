@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: log-collector
+  labels:
+    app: sentinel
+    component: collector
+spec:
+  replicas: 2  # We run 2 copies for high availability
+  selector:
+    matchLabels:
+      app: sentinel
+      component: collector
+  template:
+    metadata:
+      labels:
+        app: sentinel
+        component: collector
+    spec:
+      containers:
+      - name: collector
+        # NOTE: In a real scenario, you would push this image to a registry (Docker Hub/ECR).
+        # For local Minikube/Kind, you might need to load the image manually.
+        # We assume the image is named 'sentinel-collector:v1'
+        image: sentinel-collector:v1
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8000
+        env:
+        - name: REDIS_HOST
+          value: "redis-service" # K8s DNS name for the redis service
+        - name: REDIS_PORT
+          value: "6379"

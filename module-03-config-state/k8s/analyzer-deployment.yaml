@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: analyzer
+  labels:
+    app: sentinel
+    component: analyzer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sentinel
+      component: analyzer
+  template:
+    metadata:
+      labels:
+        app: sentinel
+        component: analyzer
+    spec:
+      containers:
+      - name: analyzer
+        image: sentinel-analyzer:v1
+        env:
+        - name: REDIS_HOST
+          value: "redis-service"
+        - name: REDIS_PORT
+          value: "6379"
+        # Inject environment variable from ConfigMap
+        - name: ALERT_KEYWORDS
+          valueFrom:
+            configMapKeyRef:
+              name: analyzer-config
+              key: ALERT_KEYWORDS

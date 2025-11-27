@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  # Service 1: The Log Collector API
+  log-collector:
+    build: ./log-collector
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_HOST=redis-queue
+      - REDIS_PORT=6379
+    depends_on:
+      - redis-queue
+    networks:
+      - sentinel-net
+
+  # Service 2: Redis (The Message Queue)
+  redis-queue:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - sentinel-net
+
+# Define a custom network to isolate our services
+networks:
+  sentinel-net:
+    driver: bridge

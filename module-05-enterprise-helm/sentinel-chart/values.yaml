@@ -1,0 +1,33 @@
+# Default values for sentinel.
+
+redis:
+  password: "supersecretpassword"
+  storageSize: 1Gi
+
+collector:
+  replicaCount: 2
+  image:
+    repository: sentinel-collector
+    tag: v1
+  service:
+    port: 80
+
+analyzer:
+  replicaCount: 1
+  image:
+    repository: sentinel-analyzer
+    tag: v1
+  alertKeywords: "ERROR,CRITICAL,WARNING"
+
+dashboard:
+  replicaCount: 1
+  image:
+    repository: sentinel-dashboard
+    tag: v1
+  service:
+    port: 80
+
+ingress:
+  enabled: true
+  className: "nginx"
+  host: "sentinel.local"

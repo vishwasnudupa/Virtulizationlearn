@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: analyzer-config
+  labels:
+    app: sentinel
+data:
+  # We can update this ConfigMap to change behavior without rebuilding the image
+  ALERT_KEYWORDS: "ERROR,CRITICAL,WARNING"
+  LOG_LEVEL: "INFO"

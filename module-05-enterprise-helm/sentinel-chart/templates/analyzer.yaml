@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-config
+data:
+  ALERT_KEYWORDS: {{ .Values.analyzer.alertKeywords | quote }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-analyzer
+  labels:
+    app: {{ .Release.Name }}
+    component: analyzer
+spec:
+  replicas: {{ .Values.analyzer.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+      component: analyzer
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+        component: analyzer
+    spec:
+      containers:
+        - name: analyzer
+          image: "{{ .Values.analyzer.image.repository }}:{{ .Values.analyzer.image.tag }}"
+          env:
+            - name: REDIS_HOST
+              value: "{{ .Release.Name }}-redis"
+            - name: REDIS_PORT
+              value: "6379"
+            - name: ALERT_KEYWORDS
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-config
+                  key: ALERT_KEYWORDS
