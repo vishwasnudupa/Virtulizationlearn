@@ -78,7 +78,7 @@ By default, containers are **ephemeral**. If you delete a container, its filesys
 graph TD
     subgraph Host Machine
         HostFS[Host Filesystem]
-        DockerArea[Docker Area (/var/lib/docker)]
+        DockerArea["Docker Area (/var/lib/docker)"]
         
         subgraph Container
             AppCode[App Code]

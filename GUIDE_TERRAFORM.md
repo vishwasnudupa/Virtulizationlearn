@@ -33,8 +33,15 @@ Modules are containers for multiple resources that are used together. A module c
 
 #### 💾 State
 Terraform stores the state of your managed infrastructure and configuration. This state is used by Terraform to map real world resources to your configuration, keep track of metadata, and improve performance for large infrastructures.
-*   **Local State**: Stored in a `terraform.tfstate` file on your machine (Not recommended for teams).
-*   **Remote State**: Stored in a remote backend like Google Cloud Storage (GCS) or AWS S3. This supports locking and team collaboration.
+
+```mermaid
+graph LR
+    Code[main.tf] -->|Plan| Core[Terraform Core]
+    State[terraform.tfstate] <--> Core
+    Core -->|Apply| Cloud[GCP/AWS]
+    
+    style State fill:#f9f,stroke:#333,stroke-width:2px
+```
 
 ---
 
@@ -43,17 +50,86 @@ The standard workflow consists of three main steps:
 
 1.  **Write**: Author infrastructure as code.
 2.  **Plan**: Preview changes before applying. Terraform calculates the difference between the desired state (your code) and the current state (live infrastructure).
-    ```bash
-    terraform plan
-    ```
 3.  **Apply**: Provision reproducible infrastructure.
-    ```bash
-    terraform apply
-    ```
+
+```mermaid
+stateDiagram-v2
+    [*] --> Write
+    Write --> Plan: terraform plan
+    Plan --> Review: Human Check
+    Review --> Apply: terraform apply
+    Apply --> Provisioned
+    Provisioned --> Destroy: terraform destroy
+    Destroy --> [*]
+```
 
 ---
 
-## 4. Advanced Terraform Concepts
+## 4. How to Analyze Output: Reading the Plan
+The `terraform plan` output is your safety net. You must understand how to read it.
+
+### The Symbols
+*   `+` **Create**: A new resource will be created.
+*   `-` **Destroy**: An existing resource will be deleted (⚠️ Dangerous!).
+*   `~` **Update**: An existing resource will be modified in-place.
+*   `-/+` **Replace**: The resource must be destroyed and re-created (e.g., changing the Region of a VM).
+
+### Example Output
+```diff
+Terraform will perform the following actions:
+
+  # google_compute_instance.vm_instance will be created
+  + resource "google_compute_instance" "vm_instance" {
+      + can_ip_forward       = false
+      + cpu_platform         = (known after apply)
+      + current_status       = (known after apply)
+      + deletion_protection  = false
+      + guest_accelerator    = []
+      + id                   = (known after apply)
+      + instance_id          = (known after apply)
+      + label_fingerprint    = (known after apply)
+      + machine_type         = "e2-medium"
+      + name                 = "terraform-instance"
+      + project              = (known after apply)
+      + self_link            = (known after apply)
+      + tags_fingerprint     = (known after apply)
+      + zone                 = "us-central1-a"
+
+      + boot_disk {
+          + auto_delete = true
+          + device_name = (known after apply)
+          + mode        = "READ_WRITE"
+          + source      = (known after apply)
+
+          + initialize_params {
+              + image  = "debian-cloud/debian-11"
+              + labels = (known after apply)
+              + size   = (known after apply)
+              + type   = (known after apply)
+            }
+        }
+
+      + network_interface {
+          + name               = (known after apply)
+          + network            = "default"
+          + network_ip         = (known after apply)
+          + stack_type         = (known after apply)
+          + subnetwork         = (known after apply)
+          + subnetwork_project = (known after apply)
+        }
+    }
+
+Plan: 1 to add, 0 to change, 0 to destroy.
+```
+
+### 🕵️ Analysis Tips
+1.  **Check the Count**: Look at the bottom line: `Plan: X to add, Y to change, Z to destroy`. If you see "destroy" when you didn't expect it, **STOP**.
+2.  **Known After Apply**: Some values (like IDs or IPs) don't exist yet. Terraform marks them as `(known after apply)`.
+3.  **Drift Detection**: If you see a change (`~`) for a setting you didn't touch, someone might have manually changed the cloud resource (ClickOps). Terraform is trying to revert it back to your code.
+
+---
+
+## 5. Advanced Terraform Concepts
 
 ### 🔒 State Locking
 When working in a team, two people running `terraform apply` at the same time can corrupt the state file. Remote backends (like GCS) support **locking**, which prevents this by creating a lock file during operations.
@@ -63,12 +139,3 @@ Workspaces allow you to manage separate states for the same configuration. This 
 
 ### 🧹 Dependency Management
 Terraform builds a dependency graph of all resources. It automatically handles creation order (e.g., creating a VPC before a Subnet). You can force dependencies using `depends_on`.
-
----
-
-## 5. Best Practices for Production
-1.  **Remote Backend**: Always use a remote backend (GCS/S3) with encryption and versioning enabled.
-2.  **Modularize**: Break down large configurations into smaller, reusable modules.
-3.  **Variable Validation**: Use validation blocks in variables to catch errors early.
-4.  **Least Privilege**: The CI/CD system running Terraform should have only the permissions necessary to create the specific resources.
-5.  **Tagging**: Tag all resources for cost allocation and management.
